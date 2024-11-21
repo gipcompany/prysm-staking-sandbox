@@ -1,0 +1,77 @@
+services:
+  staking-apps:
+    build:
+      context: .
+      dockerfile: docker/ubuntu/Dockerfile
+    command:
+      - foreman
+      - start
+    volumes:
+      - ./:/config
+    working_dir: /config
+  #   execution-client:
+  #     build:
+  #       context: .
+  #       dockerfile: docker/ubuntu/Dockerfile
+  #     command:
+  #       - geth
+  #       - --sepolia
+  #       - --http
+  #       - --http.addr=0.0.0.0
+  #       - --http.vhosts=*
+  #       - --http.api=eth,net,engine,admin
+  #       - --authrpc.jwtsecret=/config/jwt.hex
+  #     volumes:
+  #       - ./:/config
+  #     ports:
+  #       - "8545:8545"
+  #       - "8551:8551"
+  #     networks:
+  #       - eth-network
+  #
+  #   consensus-client:
+  #     build:
+  #       context: .
+  #       dockerfile: docker/ubuntu/Dockerfile
+  #     image: ubuntu
+  #     tty: true
+  #     stdin_open: true
+  #     command:
+  #       - /config/prysm.sh
+  #       - beacon-chain
+  #       - --accept-terms-of-use
+  #       - --execution-endpoint=http://execution-client:8551
+  #       - --sepolia
+  #       - --jwt-secret=/config/jwt.hex
+  #       - --checkpoint-sync-url=https://sepolia.beaconstate.info
+  #       - --genesis-beacon-api-url=https://sepolia.beaconstate.info
+  #     volumes:
+  #       - ./:/config
+  #     depends_on:
+  #       - execution-client
+  #     ports:
+  #       - "4000:4000"
+  #     networks:
+  #       - eth-network
+  #
+  validator:
+    image: ubuntu
+    command:
+      - /config/prysm.sh
+      - validator
+      - --accept-terms-of-use
+      - --sepolia
+      - --wallet-dir=/config/.my_wallet_dir
+      - --wallet-password-file=/config/.wallet-password-file
+    depends_on:
+      - staking-apps
+    volumes:
+      - ./:/config
+    ports:
+      - "7500:7500"
+    networks:
+      - eth-network
+
+networks:
+  eth-network:
+    driver: bridge

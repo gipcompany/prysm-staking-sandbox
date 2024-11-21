@@ -1,0 +1,6 @@
+.envrc
+.my_wallet_dir
+.wallet-password-file
+/dist
+/validator_keys
+jwt.hex
